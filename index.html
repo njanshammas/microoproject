@@ -1,0 +1,285 @@
+            
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cardio Assistant</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px;
+        }
+        h1 {
+            text-align: center;
+            color: #3b82f6;
+        }
+        label {
+            font-weight: 500;
+            margin-top: 12px;
+            display: block;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0 16px 0;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 1rem;
+        }
+        button {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 12px 0;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        #result {
+            margin-top: 32px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 1rem;
+            color: #334155;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cardio Risk Assessment</h1>
+        <form id="cardioForm">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" required>
+
+            <label for="age">Age:</label>
+            <input type="number" name="age" id="age" min="0" max="120" required>
+
+            <label for="sex">Sex:</label>
+            <select name="sex" id="sex" required>
+                <option value="0">Female</option>
+                <option value="1">Male</option>
+            </select>
+            <label for="Chest_Pain_Severity">Do you feel chest pain? (Severity 0-10)</label>
+            <input type="number" name="Chest_Pain_Severity" id="Chest_Pain_Severity" min="0" max="10" required>
+
+            <label for="Breathing_Difficulty_Severity">Do you have difficulty breathing? (Severity 0-10)</label>
+            <input type="number" name="Breathing_Difficulty_Severity" id="Breathing_Difficulty_Severity" min="0" max="10" required>
+
+            <label for="Headache">Do you experience frequent headaches?</label>
+            <select name="Headache" id="Headache" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+
+            <label for="Fatigue">Do you feel tired or weak?</label>
+            <select name="Fatigue" id="Fatigue" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+
+            <label for="Fever">Have you had a fever recently?</label>
+            <select name="Fever" id="Fever" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+
+            <label for="Dizziness">Are you experiencing dizziness?</label>
+            <select name="Dizziness" id="Dizziness" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+
+            <label for="Cough">Do you have a persistent cough?</label>
+            <select name="Cough" id="Cough" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+
+            <label for="Swelling">Do you have any swelling in limbs?</label>
+            <select name="Swelling" id="Swelling" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+
+            <label for="Weight_Loss">Have you lost weight unintentionally?</label>
+            <select name="Weight_Loss" id="Weight_Loss" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+
+            <label for="Sleep_Trouble">Do you have trouble sleeping?</label>
+            <select name="Sleep_Trouble" id="Sleep_Trouble" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+
+            <label for="Weight_kg">Weight (kg):</label>
+            <input type="number" name="Weight_kg" id="Weight_kg" min="30" max="250" step="0.1" required>
+
+            <label for="Blood_Pressure">Blood Pressure (mmHg):</label>
+            <input type="number" name="Blood_Pressure" id="Blood_Pressure" min="80" max="250" required>
+
+            <label for="Cholesterol">Cholesterol (mg/dL):</label>
+            <input type="number" name="Cholesterol" id="Cholesterol" min="100" max="400" required>
+
+            <button type="submit" id="getRiskBtn">Get Risk Report</button>
+        </form>
+    <div id="result"></div>
+    <button id="downloadPdf" style="display:none;margin-top:10px;">Download PDF Report</button>
+    <canvas id="riskChart" style="display:none;margin-top:20px;max-width:100%;"></canvas>
+    <div id="summary" style="display:none;"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        let lastSummary = '';
+        let riskChart;
+        document.getElementById('cardioForm').onsubmit = async function(e) {
+            e.preventDefault();
+            let form = e.target;
+            let data = {};
+            for(let el of form.elements) {
+                if(el.name) data[el.name] = el.value;
+            }
+            // Calculate BMI from height and weight
+            let height = parseFloat(data.height);
+            let weight = parseFloat(data.weight);
+            if (height > 0 && weight > 0) {
+                let bmi = weight / ((height/100) ** 2);
+                data.bmi = bmi.toFixed(2);
+            } else {
+                data.bmi = '';
+            }
+            let res = await fetch('/predict', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            let out = await res.json();
+            // Use the new summary logic from script.js for report display
+            let summary = `Patient Name: ${out.name}\nAge: ${out.age}\nSex: ${out.sex}\n\n`;
+            summary += `Risk Level: ${out.risk_level}\nRisk Probability: ${out.risk_probability}\nRecommended Tests: ${out.recommended_tests.join(', ')}\n\n`;
+            summary += "Patient Answers:\n";
+            const questions = [
+                { label: "Do you feel chest pain? (Severity 0-10)", field: "Chest_Pain_Severity" },
+                { label: "Do you have difficulty breathing? (Severity 0-10)", field: "Breathing_Difficulty_Severity" },
+                { label: "Do you experience frequent headaches?", field: "Headache" },
+                { label: "Do you feel tired or weak?", field: "Fatigue" },
+                { label: "Have you had a fever recently?", field: "Fever" },
+                { label: "Are you experiencing dizziness?", field: "Dizziness" },
+                { label: "Do you have a persistent cough?", field: "Cough" },
+                { label: "Do you have any swelling in limbs?", field: "Swelling" },
+                { label: "Have you lost weight unintentionally?", field: "Weight_Loss" },
+                { label: "Do you have trouble sleeping?", field: "Sleep_Trouble" },
+                { label: "Weight (kg):", field: "Weight_kg" },
+                { label: "Blood Pressure (mmHg):", field: "Blood_Pressure" },
+                { label: "Cholesterol (mg/dL):", field: "Cholesterol" }
+            ];
+            let lastAnswers = [];
+            for (let i = 0; i < questions.length; i++) {
+                const q = questions[i].label;
+                const field = questions[i].field;
+                let val = '';
+                if (out.answers && q in out.answers) {
+                    val = out.answers[q];
+                } else if (out.answers && field in out.answers) {
+                    val = out.answers[field];
+                } else if (data && field in data) {
+                    val = data[field];
+                }
+                summary += `- ${q}: ${val !== undefined ? val : ''}\n`;
+                lastAnswers.push({q, val: val !== undefined ? val : ''});
+            }
+            document.getElementById('result').innerText = summary;
+            document.getElementById('result').style.display = 'block';
+            window.lastSummary = summary;
+            window.lastAnswers = lastAnswers;
+            document.getElementById('downloadPdf').style.display = 'inline-block';
+
+            // Show and update chart
+            let chartCanvas = document.getElementById('riskChart');
+            chartCanvas.style.display = 'block';
+            if (riskChart) riskChart.destroy();
+            riskChart = new Chart(chartCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Risk Probability', 'Remaining'],
+                    datasets: [{
+                        data: [out.risk_probability, 1 - out.risk_probability],
+                        backgroundColor: ['#ef4444', '#60a5fa'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: true },
+                        title: {
+                            display: true,
+                            text: 'Cardio Risk Probability',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('downloadPdf').onclick = async function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            // Name, Age, Sex, and Risk % in bold and larger font
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+            const sex = document.getElementById('sex').options[document.getElementById('sex').selectedIndex].text;
+            let riskText = '';
+            // Try to extract risk percentage from the report
+            let riskMatch = /Risk Probability: ([0-9.]+)/.exec(window.lastSummary || '');
+            if (riskMatch) {
+                let percent = (parseFloat(riskMatch[1]) * 100).toFixed(1);
+                riskText = `Risk Probability: ${percent}%`;
+            }
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text(`Name: ${name}`, 15, 20);
+            doc.text(`Age: ${age}`, 15, 30);
+            doc.text(`Sex: ${sex}`, 15, 40);
+            if (riskText) doc.text(riskText, 15, 50);
+            // Main report in normal font
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            let report = '';
+            if (window.lastAnswers && window.lastAnswers.length) {
+                report += 'Patient Answers:\n';
+                for (let i = 0; i < window.lastAnswers.length; i++) {
+                    report += `- ${window.lastAnswers[i].q}: ${window.lastAnswers[i].val}\n`;
+                }
+            }
+            let splitLines = doc.splitTextToSize(report, 180);
+            doc.text(splitLines, 15, 65);
+            // Add chart
+            const chartCanvas = document.getElementById('riskChart');
+            if (chartCanvas) {
+                const chartImg = chartCanvas.toDataURL('image/png', 1.0);
+                doc.addImage(chartImg, 'PNG', 15, 120, 80, 60);
+            }
+            let safeName = name ? name.replace(/[^a-zA-Z0-9_-]/g, "_") : "patient";
+            doc.save(safeName + '.pdf');
+        }
+    </script>
+</body>
+</html>
