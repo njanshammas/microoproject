@@ -1,0 +1,77 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 32px 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 24px;
+}
+
+form label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 4px;
+    font-weight: bold;
+    color: #34495e;
+}
+
+form input, form select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+button {
+    background: #2980b9;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 16px;
+    width: 100%;
+}
+
+button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+#result {
+    margin-top: 32px;
+    padding: 16px;
+    background: #eaf6fb;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(44,62,80,0.06);
+    color: #2c3e50;
+}
+
+.report-section {
+    margin-bottom: 16px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.chart-container {
+    margin: 24px 0;
+    text-align: center;
+}
